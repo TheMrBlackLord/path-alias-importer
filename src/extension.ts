@@ -1,14 +1,15 @@
 import * as vscode from 'vscode';
+import { IOC } from './ioc';
+import { ICache, IImporter } from './interfaces';
+import { TYPES } from './ioc/types';
 
 export function activate(context: vscode.ExtensionContext) {
-   const disposable = vscode.commands.registerCommand(
-      'path-alias-importer.helloWorld',
-      () => {
-         vscode.window.showInformationMessage('Hello World from Path Alias Importer!');
-      }
-   );
-
-   context.subscriptions.push(disposable);
+   IOC.bind<vscode.ExtensionContext>(TYPES.context).toConstantValue(context);
+   const importer = IOC.get<IImporter>(TYPES.importer);
+   importer.subscribe();
 }
 
-export function deactivate() {}
+export function deactivate() {
+   const cache = IOC.get<ICache>(TYPES.cache);
+   cache.clear();
+}

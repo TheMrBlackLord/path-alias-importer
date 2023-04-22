@@ -3,20 +3,33 @@
    "displayName": "Path Alias Importer",
    "description": "Extension for easy import of components using aliases defined in tsconfig.json or jsconfig.json",
    "version": "0.0.1",
+   "license": "MIT",
+   "publisher": "MrBlackLord",
+   "icon": "icon.png",
    "engines": {
       "vscode": "^1.77.0"
    },
-   "icon": "icon.png",
+   "bugs": {
+      "url": "https://github.com/TheMrBlackLord/path-alias-importer/issues"
+   },
+   "homepage": "https://github.com/TheMrBlackLord/path-alias-importer",
+   "repository": {
+      "type": "git",
+      "url": "https://github.com/TheMrBlackLord/path-alias-importer"
+   },
    "categories": [
       "Other"
    ],
-   "activationEvents": [],
+   "activationEvents": [
+      "onLanguage:typescript",
+      "onLanguage:javascript"
+   ],
    "main": "./out/extension.js",
    "contributes": {
       "commands": [
          {
-            "command": "path-alias-importer.helloWorld",
-            "title": "Hello World"
+            "command": "path-alias-importer.scan-aliases",
+            "title": "Path Alias Importer: Scan Aliases"
          }
       ]
    },
@@ -25,8 +38,7 @@
       "compile": "tsc -p ./",
       "watch": "tsc -watch -p ./",
       "pretest": "yarn run compile && yarn run lint",
-      "lint": "eslint src --ext ts",
-      "test": "node ./out/test/runTest.js"
+      "lint": "eslint src --ext ts"
    },
    "devDependencies": {
       "@types/glob": "^8.1.0",
@@ -44,5 +56,9 @@
       "mocha": "^10.2.0",
       "prettier": "^2.8.7",
       "typescript": "^4.9.5"
+   },
+   "dependencies": {
+      "inversify": "^6.0.1",
+      "reflect-metadata": "^0.1.13"
    }
 }
