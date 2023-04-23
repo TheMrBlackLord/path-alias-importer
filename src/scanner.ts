@@ -2,10 +2,11 @@ import { inject, injectable } from 'inversify';
 import path from 'path';
 import 'reflect-metadata';
 import { Uri, workspace } from 'vscode';
-import { oneAsteriskAtTheEnd } from './regex/expressions';
 import { IAlias, ICache, INotifier, IResolvedAlias, IScanner } from './interfaces';
 import { TYPES } from './ioc/types';
+import { hasFileExtensionAtTheEnd, oneAsteriskAtTheEnd } from './regex/expressions';
 import { checkExports } from './regex/functions';
+import { Exports } from './types';
 
 @injectable()
 export class Scanner implements IScanner {
@@ -15,7 +16,8 @@ export class Scanner implements IScanner {
    ) {}
 
    private async findFiles(path: string): Promise<Uri[]> {
-      return await workspace.findFiles(path, '**/node_modules/**');
+      const relativePath = workspace.asRelativePath(path);
+      return await workspace.findFiles(relativePath, '**/node_modules/**');
    }
    async findAliases(): Promise<IAlias[]> {
       const configs = await this.findFiles('**/{ts,js}config.*.json');
@@ -58,15 +60,36 @@ export class Scanner implements IScanner {
       }
       return this.cache.resolved;
    }
-   async parseAliases(aliases: IAlias[]) {
+   private async resolveExports(file: Uri): Promise<Exports> {
+      const code = (await workspace.fs.readFile(file)).toString();
+      const results = checkExports(code);
+      const exports: Exports = [];
+      for (const { names, path: exportPath } of results) {
+         if (exportPath && names === '*') {
+            let pathToFile = path.resolve(path.dirname(file.fsPath), exportPath);
+            if (!pathToFile.match(hasFileExtensionAtTheEnd)) {
+               pathToFile += '.{ts,js}';
+            }
+            const newFile = (await this.findFiles(pathToFile))[0];
+            const newExports = await this.resolveExports(newFile);
+            exports.push(...newExports);
+         } else {
+            exports.push(...names);
+         }
+      }
+      return exports;
+   }
+   async getExports(aliases: IAlias[]): Promise<Exports> {
+      const exports: Exports = [];
       const resolvedAliases = await this.resolveAliases(aliases);
       for (const { records } of resolvedAliases) {
          for (const alias in records) {
             for (const record of records[alias]) {
-               const code = (await workspace.fs.readFile(record)).toString();
-               this.cache.pushExports(checkExports(code));
+               const fileExports = await this.resolveExports(record);
+               exports.push(...fileExports);
             }
          }
       }
+      return exports;
    }
 }

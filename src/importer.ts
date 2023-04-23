@@ -1,9 +1,11 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import {
+   CompletionItemProvider,
    ExtensionContext,
    StatusBarAlignment,
    commands,
+   languages,
    window,
    workspace
 } from 'vscode';
@@ -17,6 +19,8 @@ export class Importer implements IImporter {
    constructor(
       @inject(TYPES.context) private readonly context: ExtensionContext,
       @inject(TYPES.scanner) private readonly scanner: IScanner,
+      @inject(TYPES.completion)
+      private readonly completionProvider: CompletionItemProvider,
       @inject(TYPES.cache) private readonly cache: ICache,
       @inject(TYPES.notifier) private readonly notifier: INotifier
    ) {
@@ -30,8 +34,11 @@ export class Importer implements IImporter {
             this.setup();
          }
       );
-
-      this.context.subscriptions.push(scanAliasesCommand);
+      const completion = languages.registerCompletionItemProvider(
+         ['typescript', 'javascript'],
+         this.completionProvider
+      );
+      this.context.subscriptions.push(scanAliasesCommand, completion);
    }
    public async setup() {
       const root = workspace.workspaceFolders?.[0];
@@ -39,13 +46,13 @@ export class Importer implements IImporter {
          this.notifier.errorNotify(MESSAGES.UNDEFINED_ROOT);
          return false;
       }
-      await this.getAliases(root.uri.fsPath);
+      await this.getAllExports(root.uri.fsPath);
       this.statusBar.text = `Aliases: ${this.cache.length}`;
       return true;
    }
-   private async getAliases(rootPath: string) {
+   private async getAllExports(rootPath: string) {
       const aliases = await this.scanner.findAliases(rootPath);
-      await this.scanner.parseAliases(aliases);
-      // console.log(this.cache.aliases);
+      const exports = await this.scanner.getExports(aliases);
+      console.log(exports);
    }
 }

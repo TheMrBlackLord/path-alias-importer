@@ -2,13 +2,13 @@ import { injectable } from 'inversify';
 import 'reflect-metadata';
 import { ICache, IResolvedAlias } from './interfaces';
 import { Uri } from 'vscode';
-import { Export } from './types';
+import { Exports } from './types';
 
 @injectable()
 export class Cache implements ICache {
    private _resolved: IResolvedAlias[] = [];
    private _length = 0;
-   private _exports: Export[] = [];
+   private _exports: Exports = [];
 
    get length(): number {
       return this._length;
@@ -16,10 +16,10 @@ export class Cache implements ICache {
    get resolved(): IResolvedAlias[] {
       return this._resolved;
    }
-   get exports(): Export[] {
+   get exports(): Exports {
       return this._exports;
    }
-   pushExports(exports: Export[]) {
+   pushExports(exports: Exports) {
       this._exports.push(...exports);
    }
    pushResolved(alias: string, base: string, files: Uri[]) {

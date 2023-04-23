@@ -1,12 +1,12 @@
 import { Uri } from 'vscode';
 import { IResolvedAlias } from './resolvedAlias.interface';
-import { Export } from '../types';
+import { Exports } from '../types';
 
 export interface ICache {
    length: number;
    resolved: IResolvedAlias[];
-   exports: Export[];
+   exports: Exports;
    pushResolved(alias: string, base: string, file: Uri[]): void;
-   pushExports(exports: Export[]): void;
+   pushExports(exports: Exports): void;
    clear(): void;
 }

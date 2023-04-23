@@ -3,5 +3,6 @@ export const TYPES = {
    scanner: Symbol.for('scanner'),
    notifier: Symbol.for('notifier'),
    importer: Symbol.for('importer'),
-   context: Symbol.for('context')
+   context: Symbol.for('context'),
+   completion: Symbol.for('completion')
 };

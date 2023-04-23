@@ -1,4 +1,4 @@
-import { Export } from '../types';
+import { ParsingResult } from '../types';
 import * as regex from './expressions';
 
 export function checkExports(code: string) {
@@ -9,7 +9,7 @@ export function checkExports(code: string) {
       checkExportNamesFromPath(code)
    ];
 
-   return checks.reduce<Export[]>((prev, curr) => {
+   return checks.reduce<ParsingResult[]>((prev, curr) => {
       if (Array.isArray(curr)) {
          prev.push(...curr);
       }
@@ -19,10 +19,12 @@ export function checkExports(code: string) {
 
 function checkExportEntityWithName(code: string) {
    const matches = code.matchAll(regex.exportEntityWithName);
-   const result: Export[] = [];
+   const result: ParsingResult[] = [];
    for (const match of matches) {
       if (match.groups) {
-         result.push(match.groups.name);
+         result.push({
+            names: [match.groups.name]
+         });
       }
    }
    return result.length ? result : false;
@@ -30,10 +32,12 @@ function checkExportEntityWithName(code: string) {
 
 function checkExportByName(code: string) {
    const matches = code.matchAll(regex.exportByName);
-   const result: Export[] = [];
+   const result: ParsingResult[] = [];
    for (const match of matches) {
       if (match.groups) {
-         result.push(...match.groups.names.trim().split(regex.splitter));
+         result.push({
+            names: match.groups.names.trim().split(regex.splitter)
+         });
       }
    }
    return result.length ? result : false;
@@ -41,7 +45,7 @@ function checkExportByName(code: string) {
 
 function checkExportAllFromPath(code: string) {
    const matches = code.matchAll(regex.exportAllFromPath);
-   const result: Export[] = [];
+   const result: ParsingResult[] = [];
    for (const match of matches) {
       if (match.groups) {
          result.push({
@@ -53,9 +57,11 @@ function checkExportAllFromPath(code: string) {
    return result.length ? result : false;
 }
 
+// TODO: handle export { Asd as DSFSDF } from ''
+// replace('Asd as', '');
 function checkExportNamesFromPath(code: string) {
    const matches = code.matchAll(regex.exportNamesFromPath);
-   const result: Export[] = [];
+   const result: ParsingResult[] = [];
    for (const match of matches) {
       if (match.groups) {
          result.push({

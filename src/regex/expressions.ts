@@ -1,4 +1,5 @@
 export const oneAsteriskAtTheEnd = /[^*][*]$/gm;
+export const hasFileExtensionAtTheEnd = /(?:\.ts|\.js)$/gi;
 export const splitter = /\s*,\s*/gm;
 
 /**
